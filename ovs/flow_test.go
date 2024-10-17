@@ -73,6 +73,15 @@ func TestFlowMarshalText(t *testing.T) {
 			s: "priority=2005,in_port=LOCAL,table=0,idle_timeout=0,actions=resubmit(,1)",
 		},
 		{
+			desc: "Flow with in_port=pf0hpf",
+			f: &Flow{
+				Priority:   2005,
+				InPortName: "pf0hpf",
+				Actions:    []Action{Resubmit(0, 1)},
+			},
+			s: "priority=2005,in_port=pf0hpf,table=0,idle_timeout=0,actions=resubmit(,1)",
+		},
+		{
 			desc: "ARP Flow",
 			f: &Flow{
 				Priority: 1005,

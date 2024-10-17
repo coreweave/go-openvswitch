@@ -59,6 +59,7 @@ type Flow struct {
 	Priority    int
 	Protocol    Protocol
 	InPort      int
+	InPortName  string
 	Matches     []Match
 	Table       int
 	IdleTimeout int
@@ -173,7 +174,9 @@ func (f *Flow) MarshalText() ([]byte, error) {
 		b = append(b, f.Protocol...)
 	}
 
-	if f.InPort != 0 {
+	if f.InPortName != "" {
+		b = append(b, ","+inPort+"="+truncatePortName(f.InPortName)...)
+	} else if f.InPort != 0 {
 		b = append(b, ","+inPort+"="...)
 
 		// Special case, InPortLOCAL is converted to the literal string LOCAL
@@ -367,12 +370,11 @@ func (f *Flow) UnmarshalText(b []byte) error {
 
 			port, err := strconv.ParseInt(s, 10, 0)
 			if err != nil {
-				return &FlowError{
-					Str: s,
-					Err: err,
-				}
+				// non-numeric in_port assumed to be name
+				f.InPortName = s
+			} else {
+				f.InPort = int(port)
 			}
-			f.InPort = int(port)
 			continue
 		case idleTimeout:
 			// Parse idle_timeout into struct field.
@@ -489,4 +491,14 @@ func marshalFunctions(fns []func() ([]byte, error)) ([]string, error) {
 // prefixed with 0x and zero-padded up to 16 characters in length.
 func paddedHexUint64(i uint64) string {
 	return fmt.Sprintf("%#016x", i)
+}
+
+// truncatePortName returns a port name as allowed in OpenFlow, 15 bytes
+// maximum. This function assumes the port name is ASCII (single byte
+// characters).
+func truncatePortName(n string) string {
+	if len(n) <= 15 {
+		return n
+	}
+	return n[:15]
 }
