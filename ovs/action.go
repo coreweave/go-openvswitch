@@ -411,7 +411,7 @@ func (a *outputAction) MarshalText() ([]byte, error) {
 		return nil, errOutputNegativePort
 	}
 	if a.portName != "" {
-		return bprintf(patOutput, truncatePortName(a.portName)), nil
+		return bprintf(patOutput, a.portName), nil
 	}
 	return bprintf(patOutput, a.port), nil
 }
@@ -458,7 +458,7 @@ func (a *outputFieldAction) GoString() string {
 // applies multipath link selection `algorithm` (with parameter `arg`)
 // to choose one of `n_links` output links numbered 0 through n_links
 // minus 1, and stores the link into `dst`, which must be a field or
-// subfield in the syntax described under ``Field Specifications’’
+// subfield in the syntax described under "Field Specifications"
 // above.
 // https://www.openvswitch.org/support/dist-docs/ovs-actions.7.txt
 func Multipath(fields string, basis int, algorithm string, nlinks int, arg int, dst string) Action {

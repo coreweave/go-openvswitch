@@ -697,7 +697,7 @@ type inPortMatch struct {
 // MarshalText implements Match.
 func (i *inPortMatch) MarshalText() ([]byte, error) {
 	if i.portName != "" {
-		return bprintf("%s=%s", inPort, truncatePortName(i.portName)), nil
+		return bprintf("%s=%s", inPort, i.portName), nil
 	}
 	return bprintf("%s=%d", inPort, i.port), nil
 }
