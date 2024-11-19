@@ -59,6 +59,7 @@ type Flow struct {
 	Priority    int
 	Protocol    Protocol
 	InPort      int
+	InPortName  string
 	Matches     []Match
 	Table       int
 	IdleTimeout int
@@ -130,9 +131,7 @@ const (
 	portLOCAL = "LOCAL"
 )
 
-var (
-	priorityBytes = []byte(priorityString)
-)
+var priorityBytes = []byte(priorityString)
 
 // MarshalText marshals a Flow into its textual form.
 func (f *Flow) MarshalText() ([]byte, error) {
@@ -173,7 +172,9 @@ func (f *Flow) MarshalText() ([]byte, error) {
 		b = append(b, f.Protocol...)
 	}
 
-	if f.InPort != 0 {
+	if f.InPortName != "" {
+		b = append(b, ","+inPort+"="+f.InPortName...)
+	} else if f.InPort != 0 {
 		b = append(b, ","+inPort+"="...)
 
 		// Special case, InPortLOCAL is converted to the literal string LOCAL
@@ -367,12 +368,11 @@ func (f *Flow) UnmarshalText(b []byte) error {
 
 			port, err := strconv.ParseInt(s, 10, 0)
 			if err != nil {
-				return &FlowError{
-					Str: s,
-					Err: err,
-				}
+				// non-numeric in_port assumed to be name
+				f.InPortName = s
+			} else {
+				f.InPort = int(port)
 			}
-			f.InPort = int(port)
 			continue
 		case idleTimeout:
 			// Parse idle_timeout into struct field.

@@ -81,7 +81,10 @@ func parseMatch(key string, value string) (Match, error) {
 	case tunFlags:
 		return parseIntMatch(key, value, math.MaxInt32)
 	case inPort:
-		return parseIntMatch(key, value, math.MaxInt32)
+		if m, err := parseIntMatch(key, value, math.MaxInt32); err == nil {
+			return m, nil
+		}
+		return InPortMatchNamed(value), nil
 	case ipv6SRC:
 		return IPv6Source(value), nil
 	case ipv6DST:

@@ -190,7 +190,7 @@ const (
 	patModTransportDestinationPort = "mod_tp_dst:%d"
 	patModTransportSourcePort      = "mod_tp_src:%d"
 	patModVLANVID                  = "mod_vlan_vid:%d"
-	patOutput                      = "output:%d"
+	patOutput                      = "output:%v"
 	patOutputField                 = "output:%s"
 	patResubmitPort                = "resubmit:%s"
 	patResubmitPortTable           = "resubmit(%s,%s)"
@@ -393,9 +393,16 @@ func Output(port int) Action {
 	}
 }
 
+func OutputNamed(portName string) Action {
+	return &outputAction{
+		portName: portName,
+	}
+}
+
 // An outputAction is an Action which is used by Output.
 type outputAction struct {
-	port int
+	port     int
+	portName string
 }
 
 // MarshalText implements Action.
@@ -403,12 +410,17 @@ func (a *outputAction) MarshalText() ([]byte, error) {
 	if a.port < 0 {
 		return nil, errOutputNegativePort
 	}
-
+	if a.portName != "" {
+		return bprintf(patOutput, a.portName), nil
+	}
 	return bprintf(patOutput, a.port), nil
 }
 
 // GoString implements Action.
 func (a *outputAction) GoString() string {
+	if a.portName != "" {
+		return fmt.Sprintf("ovs.Output(%q)", a.portName)
+	}
 	return fmt.Sprintf("ovs.Output(%d)", a.port)
 }
 
@@ -446,7 +458,7 @@ func (a *outputFieldAction) GoString() string {
 // applies multipath link selection `algorithm` (with parameter `arg`)
 // to choose one of `n_links` output links numbered 0 through n_links
 // minus 1, and stores the link into `dst`, which must be a field or
-// subfield in the syntax described under ``Field Specifications’’
+// subfield in the syntax described under "Field Specifications"
 // above.
 // https://www.openvswitch.org/support/dist-docs/ovs-actions.7.txt
 func Multipath(fields string, basis int, algorithm string, nlinks int, arg int, dst string) Action {

@@ -679,20 +679,34 @@ func InPortMatch(port int) Match {
 	}
 }
 
+// InPortMatchNamed matches packets ingressing from a specified OVS port
+func InPortMatchNamed(portName string) Match {
+	return &inPortMatch{
+		portName: portName,
+	}
+}
+
 var _ Match = &inPortMatch{}
 
 // inPort matches packets ingressing from a specified OVS port
 type inPortMatch struct {
-	port int
+	port     int
+	portName string
 }
 
 // MarshalText implements Match.
 func (i *inPortMatch) MarshalText() ([]byte, error) {
+	if i.portName != "" {
+		return bprintf("%s=%s", inPort, i.portName), nil
+	}
 	return bprintf("%s=%d", inPort, i.port), nil
 }
 
 // GoString implements Match.
 func (i *inPortMatch) GoString() string {
+	if i.portName != "" {
+		return fmt.Sprintf("ovs.InPort(%q)", i.portName)
+	}
 	return fmt.Sprintf("ovs.InPort(%d)", i.port)
 }
 

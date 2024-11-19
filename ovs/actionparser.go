@@ -318,7 +318,8 @@ func parseAction(s string) (Action, error) {
 		var port int
 		n, err := fmt.Sscanf(s, patOutput, &port)
 		if err != nil {
-			return nil, err
+			// non-numeric port assumed to be name
+			return OutputNamed(s), nil
 		}
 		if n > 0 {
 			return Output(port), nil

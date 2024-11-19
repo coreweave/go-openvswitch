@@ -291,10 +291,11 @@ func TestActionModVLANVID(t *testing.T) {
 
 func TestActionOutput(t *testing.T) {
 	var tests = []struct {
-		desc   string
-		port   int
-		action string
-		err    error
+		desc     string
+		port     int
+		portName string
+		action   string
+		err      error
 	}{
 		{
 			desc: "port -1",
@@ -306,11 +307,22 @@ func TestActionOutput(t *testing.T) {
 			port:   10,
 			action: "output:10",
 		},
+		{
+			desc:     "port foo",
+			portName: "foo",
+			action:   "output:foo",
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
-			action, err := Output(tt.port).MarshalText()
+			var action []byte
+			var err error
+			if tt.portName != "" {
+				action, err = OutputNamed(tt.portName).MarshalText()
+			} else {
+				action, err = Output(tt.port).MarshalText()
+			}
 
 			if want, got := errStr(tt.err), errStr(err); want != got {
 				t.Fatalf("unexpected error:\n- want: %q\n-  got: %q",
